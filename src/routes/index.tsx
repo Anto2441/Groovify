@@ -10,7 +10,7 @@ import {
 
 export const Route = createFileRoute('/')({ component: App })
 
-function App() {
+export function App() {
   const features = [
     {
       icon: <Zap className="w-12 h-12 text-cyan-400" />,
