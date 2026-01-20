@@ -9,7 +9,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     setupFiles: ['src/test/setup.ts'],
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       reporter: ['text', 'json-summary'],
       all: true,
       include: ['src/**/*.{ts,tsx}'],
