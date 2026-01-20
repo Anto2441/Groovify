@@ -1,3 +1,17 @@
+# Dependencies
+node_modules
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+
+# Build outputs
+.output
+dist
+dist-ssr
+.nitro
+.tanstack
+.vinxi
+
+# Generated files
+*.log
+.DS_Store
