@@ -18,7 +18,7 @@ export const Route = createFileRoute('/')({
   }),
 })
 
-function Home() {
+export function Home() {
   const state = Route.useLoaderData()
 
   return (
