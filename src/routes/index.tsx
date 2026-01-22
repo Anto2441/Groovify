@@ -1,31 +1,21 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
+import { createFileRoute } from '@tanstack/react-router'
 import {
   SignedIn,
   SignInButton,
   SignedOut,
   UserButton,
 } from '@clerk/tanstack-react-start'
-import { getCurrentUserId } from '@/features/auth/utils'
-
-const authStateFn = createServerFn().handler(async () => {
-  const userId = await getCurrentUserId()
-
-  if (!userId) {
-    throw redirect({
-      to: '/sign-in/$',
-    })
-  }
-
-  return { userId }
-})
+import { ensureAuthenticated } from '@/features/auth/guards'
 
 export const Route = createFileRoute('/')({
   component: Home,
-  beforeLoad: async () => await authStateFn(),
-  loader: async ({ context }) => {
-    return { userId: context.userId }
+  beforeLoad: async () => {
+    const userId = await ensureAuthenticated()
+    return { userId }
   },
+  loader: async ({ context }) => ({
+    userId: context.userId,
+  }),
 })
 
 function Home() {
