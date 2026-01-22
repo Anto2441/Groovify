@@ -1,17 +1,17 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { auth } from '@clerk/tanstack-react-start/server'
 import {
   SignedIn,
   SignInButton,
   SignedOut,
   UserButton,
 } from '@clerk/tanstack-react-start'
+import { getCurrentUserId } from '@/features/auth/utils'
 
 const authStateFn = createServerFn().handler(async () => {
-  const { isAuthenticated, userId } = await auth()
+  const userId = await getCurrentUserId()
 
-  if (!isAuthenticated) {
+  if (!userId) {
     throw redirect({
       to: '/sign-in/$',
     })
