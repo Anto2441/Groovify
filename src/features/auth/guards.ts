@@ -1,4 +1,4 @@
-import { redirect } from '@tanstack/react-router'
+import { LoaderFnContext, redirect } from '@tanstack/react-router'
 
 import { getCurrentUserId } from './utils'
 
@@ -22,9 +22,14 @@ export async function ensureAuthenticated(): Promise<string> {
  * Wraps a loader that needs the authenticated user ID. The inner callback runs
  * only after authentication succeeds and receives the resolved userId.
  */
-export function requireAuthLoader<T>(handler: (userId: string) => Promise<T> | T) {
-  return async () => {
+export function requireAuthLoader<T>(
+  handler: (
+    userId: string,
+    ctx: LoaderFnContext
+  ) => Promise<T>
+) {
+  return async (ctx: LoaderFnContext) => {
     const userId = await ensureAuthenticated()
-    return handler(userId)
+    return handler(userId, ctx)
   }
 }
