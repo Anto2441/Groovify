@@ -8,6 +8,7 @@ vi.mock('@clerk/tanstack-react-start', () => ({
   SignedOut: ({ children }: PropsWithChildren) => <div>{children}</div>,
   SignInButton: () => <button type="button">Sign in</button>,
   UserButton: () => <button type="button">User</button>,
+  useUser: () => ({ user: null }),
 }))
 
 beforeEach(() => {
