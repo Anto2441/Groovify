@@ -1,59 +1,63 @@
-import type { PlaylistFilters, Playlist, SpotifyTrack } from '@/shared/test-utils/fixtures'
-import type { SpotifyService } from '@/shared/test-utils/mockSpotifyService'
+import type { PlaylistFilters, Playlist, PlaylistMetadata } from '@/features/playlist/types'
+import type { SpotifyTrack } from '@/shared/types/spotify'
 
-type PlaylistBuilderOptions = {
-  filters: PlaylistFilters
-  tracks: SpotifyTrack[]
+import { validateFilters } from './validation'
+
+const DEFAULT_TRACK_COUNT = 10
+
+type SpotifyService = {
+  searchTracks: (query: string, limit?: number) => Promise<SpotifyTrack[]>
+  getRecommendations: (params: PlaylistFilters) => Promise<SpotifyTrack[]>
 }
 
-const createId = () => `playlist-${Math.random().toString(36).slice(2, 10)}`
+const generateId = () => `playlist-${Math.random().toString(36).slice(2, 10)}`
 
-const filterTracksByYear = (tracks: SpotifyTrack[], filters: PlaylistFilters) => {
-  const { yearStart, yearEnd } = filters
-  if (yearStart == null && yearEnd == null) {
-    return tracks
+const buildQuery = (filters: PlaylistFilters) => {
+  const parts: string[] = []
+
+  if (filters.genre) {
+    if (Array.isArray(filters.genre)) {
+      parts.push(filters.genre.join(' '))
+    } else {
+      parts.push(filters.genre)
+    }
   }
 
-  return tracks.filter((track) => {
-    const releaseYear = track.album.release_date ? Number(track.album.release_date.split('-')[0]) : undefined
-    if (releaseYear == null) {
-      return true
-    }
-    if (yearStart != null && releaseYear < yearStart) {
-      return false
-    }
-    if (yearEnd != null && releaseYear > yearEnd) {
-      return false
-    }
-    return true
-  })
-}
-
-const limitTrackCount = (tracks: SpotifyTrack[], count?: number) => {
-  if (count == null || count <= 0) {
-    return tracks
+  if (filters.yearStart != null && filters.yearEnd != null) {
+    parts.push(`year:${filters.yearStart}-${filters.yearEnd}`)
   }
 
-  return tracks.slice(0, count)
+  return parts.join(' ').trim() || 'playlist'
 }
 
-const buildPlaylist = ({ tracks, filters }: PlaylistBuilderOptions): Playlist => {
-  const genreLabel = filters.genre ?? 'Mix'
-  const trackCount = filters.trackCount ?? tracks.length
-  return {
-    id: createId(),
-    name: `${genreLabel.charAt(0).toUpperCase()}${genreLabel.slice(1)} Vibes`,
-    description: `Generated ${trackCount} ${genreLabel} tracks.`,
-    filters,
-    tracks,
-    createdAt: new Date().toISOString(),
-  }
-}
+const buildMetadata = (requested: number, actual: number): PlaylistMetadata => ({
+  requestedTrackCount: requested,
+  actualTrackCount: actual,
+  filtersRelaxed: actual < requested,
+})
 
 export async function generatePlaylist(filters: PlaylistFilters, spotifyService: SpotifyService): Promise<Playlist> {
-  const recommended = await spotifyService.getRecommendations(filters)
-  const filtered = filterTracksByYear(recommended, filters)
-  const limited = limitTrackCount(filtered, filters.trackCount)
+  const validation = validateFilters(filters)
 
-  return buildPlaylist({ filters, tracks: limited })
+  if (!validation.valid) {
+    throw new Error('Invalid playlist filters')
+  }
+
+  const requestedTrackCount = filters.trackCount ?? DEFAULT_TRACK_COUNT
+  const query = buildQuery(filters)
+  await spotifyService.searchTracks(query, Math.max(requestedTrackCount, DEFAULT_TRACK_COUNT))
+
+  const recommendedTracks = await spotifyService.getRecommendations(filters)
+  const limitedTracks = recommendedTracks.slice(0, requestedTrackCount)
+  const actualTrackCount = limitedTracks.length
+
+  const metadata = buildMetadata(requestedTrackCount, actualTrackCount)
+
+  return {
+    id: generateId(),
+    name: `Groovify Mix`,
+    filters,
+    tracks: limitedTracks,
+    metadata,
+  }
 }
