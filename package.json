@@ -9,7 +9,8 @@
     "test": "vitest run",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier",
-    "check": "prettier --write . && eslint --fix"
+    "check": "prettier --write . && eslint --fix",
+    "generate-playlist": "tsx src/cli/generatePlaylist.ts"
   },
   "dependencies": {
     "@clerk/tanstack-react-start": "^0.27.15",
@@ -40,6 +41,7 @@
     "@vitest/ui": "^3.2.4",
     "jsdom": "^27.0.0",
     "prettier": "^3.5.3",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
     "vitest": "^3.2.4",
