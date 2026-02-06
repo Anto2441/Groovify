@@ -12,6 +12,25 @@ function PlaygroundPage() {
     <div>
       <h1>Groovify Dev Playlist Playground</h1>
       <p>Dev-only page for manually testing playlist generation.</p>
+      <form>
+        <div>
+          <label htmlFor="genre">Genre</label>
+          <input id="genre" name="genre" type="text" />
+        </div>
+        <div>
+          <label htmlFor="yearStart">Year start</label>
+          <input id="yearStart" name="yearStart" type="number" />
+        </div>
+        <div>
+          <label htmlFor="yearEnd">Year end</label>
+          <input id="yearEnd" name="yearEnd" type="number" />
+        </div>
+        <div>
+          <label htmlFor="trackCount">Track count</label>
+          <input id="trackCount" name="trackCount" type="number" />
+        </div>
+        <button type="submit">Generate playlist</button>
+      </form>
     </div>
   )
 }
