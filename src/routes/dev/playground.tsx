@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
 import type { Playlist, PlaylistFilters } from '@/features/playlist/types'
@@ -5,6 +6,19 @@ import { generatePlaylist } from '@/features/playlist/services/generation'
 import { getRecommendations, searchTracks } from '@/shared/services/spotify'
 
 const DEFAULT_TRACK_COUNT = 10
+
+function PlaygroundPage() {
+  return (
+    <div>
+      <h1>Groovify Dev Playlist Playground</h1>
+      <p>Dev-only page for manually testing playlist generation.</p>
+    </div>
+  )
+}
+
+export const Route = createFileRoute('/dev/playground')({
+  component: PlaygroundPage,
+})
 
 const ensureFilters = (filters?: PlaylistFilters) => {
   if (!filters) {
