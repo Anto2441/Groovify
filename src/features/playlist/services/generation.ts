@@ -16,11 +16,7 @@ const buildQuery = (filters: PlaylistFilters) => {
   const parts: string[] = []
 
   if (filters.genre) {
-    if (Array.isArray(filters.genre)) {
-      parts.push(filters.genre.join(' '))
-    } else {
-      parts.push(filters.genre)
-    }
+    parts.push(Array.isArray(filters.genre) ? filters.genre.join(' ') : filters.genre)
   }
 
   if (filters.yearStart != null && filters.yearEnd != null) {
@@ -28,6 +24,34 @@ const buildQuery = (filters: PlaylistFilters) => {
   }
 
   return parts.join(' ').trim() || 'playlist'
+}
+
+const dedupeTracksById = (tracks: SpotifyTrack[]) => {
+  const seen = new Set<string>()
+  return tracks.filter((track) => {
+    if (seen.has(track.id)) {
+      return false
+    }
+    seen.add(track.id)
+    return true
+  })
+}
+
+const shuffleTracks = (tracks: SpotifyTrack[]) => {
+  const result = [...tracks]
+
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = (i * 3 + 1) % (i + 1)
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+
+  return result
+}
+
+const buildCandidatePool = (searchResults: SpotifyTrack[], recommended: SpotifyTrack[]) => {
+  const combined = [...searchResults, ...recommended]
+  const deduped = dedupeTracksById(combined)
+  return shuffleTracks(deduped)
 }
 
 const buildMetadata = (requested: number, actual: number): PlaylistMetadata => ({
@@ -45,10 +69,16 @@ export async function generatePlaylist(filters: PlaylistFilters, spotifyService:
 
   const requestedTrackCount = filters.trackCount ?? DEFAULT_TRACK_COUNT
   const query = buildQuery(filters)
-  await spotifyService.searchTracks(query, Math.max(requestedTrackCount, DEFAULT_TRACK_COUNT))
+  const searchLimit = Math.max(requestedTrackCount * 2, DEFAULT_TRACK_COUNT)
 
+  const searchResults = await spotifyService.searchTracks(query, searchLimit)
   const recommendedTracks = await spotifyService.getRecommendations(filters)
-  const limitedTracks = recommendedTracks.slice(0, requestedTrackCount)
+
+  const candidateTracks =
+    recommendedTracks.length > 0
+      ? buildCandidatePool(searchResults, recommendedTracks)
+      : []
+  const limitedTracks = candidateTracks.slice(0, requestedTrackCount)
   const actualTrackCount = limitedTracks.length
 
   const metadata = buildMetadata(requestedTrackCount, actualTrackCount)
