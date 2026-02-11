@@ -92,3 +92,18 @@ export async function getSpotifyAccessToken(): Promise<string> {
 
   return inFlight
 }
+
+async function checkSpotifyToken() {
+  const token = await getSpotifyAccessToken()
+  const res = await fetch('https://api.spotify.com/v1/recommendations?seed_genres=rock&limit=1', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  const data = await res.json()
+  console.log('data', data)
+}
+
+checkSpotifyToken().catch(console.error)
+
