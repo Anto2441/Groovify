@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { useCallback, useState, type FormEvent } from 'react'
+import { useCallback, useState } from 'react'
+import type { FormEvent } from 'react'
 
 import type { Playlist, PlaylistFilters } from '@/features/playlist/types'
 import { generatePlaylist } from '@/features/playlist/services/generation'
@@ -123,7 +124,15 @@ function PlaygroundPage() {
       {result && (
         <div>
           <h2>Generated Playlist</h2>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
+          <p>Name: {result.name}</p>
+          <p>Track count: {result.metadata.actualTrackCount}</p>
+          <ul>
+            {result.tracks.map((track) => (
+              <li key={track.id}>
+                {track.name} by {track.artists.map((artist) => artist.name).join(', ')}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
