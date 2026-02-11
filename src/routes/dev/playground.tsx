@@ -117,8 +117,9 @@ function PlaygroundPage() {
         </button>
       </form>
       {error && (
-        <div>
-          <p>Error: {error}</p>
+        <div role="alert">
+          <strong>Error:</strong>
+          <p>{error}</p>
         </div>
       )}
       {result && (
